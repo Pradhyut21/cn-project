@@ -121,8 +121,21 @@ int main() {
             }
 
             /* Handle 'cd' command to change the server's working directory */
-            if (strncmp(buffer, "cd ", 3) == 0) {
-                char *dir = buffer + 3;
+            if (strncmp(buffer, "cd", 2) == 0 && (buffer[2] == ' ' || buffer[2] == '.' || buffer[2] == '\\' || buffer[2] == '/')) {
+                char *dir = buffer + 2;
+                
+                /* Skip any leading spaces after 'cd' */
+                while (*dir == ' ') dir++;
+                
+                /* Remove surrounding quotes if the user typed them */
+                if (dir[0] == '"') {
+                    dir++;
+                    size_t len = strlen(dir);
+                    if (len > 0 && dir[len - 1] == '"') {
+                        dir[len - 1] = '\0';
+                    }
+                }
+
                 if (_chdir(dir) == 0) {
                     /* Print current directory to server log to confirm */
                     char cwd[256];
