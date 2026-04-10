@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <winsock2.h>
+#include <direct.h>
 
 #pragma comment(lib, "ws2_32.lib")
 
@@ -117,6 +118,23 @@ int main() {
                 send(client_fd, "Goodbye!", 8, 0);
                 printf("[server] Client said exit. Closing session.\n");
                 break;
+            }
+
+            /* Handle 'cd' command to change the server's working directory */
+            if (strncmp(buffer, "cd ", 3) == 0) {
+                char *dir = buffer + 3;
+                if (_chdir(dir) == 0) {
+                    /* Print current directory to server log to confirm */
+                    char cwd[256];
+                    if (_getcwd(cwd, 256) != NULL) {
+                        printf("[server] Directory changed to: %s\n", cwd);
+                    }
+                    send(client_fd, "Directory changed.\n", 19, 0);
+                } else {
+                    printf("[server] Failed to change directory to: %s\n", dir);
+                    send(client_fd, "ERROR: could not change directory.\n", 35, 0);
+                }
+                continue;
             }
 
             /* Run the command and capture output (Windows uses _popen) */
